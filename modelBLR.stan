@@ -14,7 +14,7 @@ parameters {
   real<lower = 0> sigma_y;        // sigma lowest value is 0, priros for the sd of the prior
 }
 model {
-  beta[1] ~ normal(mu_y, 25);           // the average score is around 500
+  beta[1] ~ normal(mu_y, mu_y/10);           // the average score is around 500
   for (m in 2:M) {
   beta[m] ~ normal(0, 25);
   }

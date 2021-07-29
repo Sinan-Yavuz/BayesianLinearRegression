@@ -16,9 +16,9 @@ pisa.2009.stu <- readRDS("pisa.2009.stu.RDS")
 
 #missing data needs to be modeled in stan, I will listwise delete. My goal is just to have sense of the priors 
 dt <- na.omit(pisa.2009.stu)
-
+names(dt)
 y <- dt$PV1READ
-x <- dt[,-7]
+x <- dt[,-grep("PV1READ", colnames(dt))]
 
 #data prep function - it is useful and keeps the environment clean
 data.stan <- function(y.train, x.train) {
@@ -30,13 +30,13 @@ data.stan <- function(y.train, x.train) {
 }
 
 #also helpful to get the estimates directly
-my.blr <- function(y.train, x.train, n.chains = 4, n_iter = 00000) {
+my.blr <- function(y.train, x.train, n.chains = 4, n_iter = 4000) {
   writeLines(modelstring, con = 'modelBLR.stan')
   data <- data.stan(y.train, x.train)
   fit <- stan('modelBLR.stan', data = data, iter = n_iter, chains = n.chains)
   est <- summary(fit)$summary
   beta <- est[grep('^beta\\[', rownames(est)), ][1:data$M,c("mean","sd")]
-  rownames(beta) <- colnames(x)
+  rownames(beta) <- colnames(data$x)
   return(beta)
 }
 
@@ -56,7 +56,7 @@ parameters {
   real<lower = 0> sigma_y;        // sigma lowest value is 0, priros for the sd of the prior
 }
 model {
-  beta[1] ~ normal(mu_y, 25);           // the average score is around 500
+  beta[1] ~ normal(mu_y, mu_y/10);           // the average score is around 500
   for (m in 2:M) {
   beta[m] ~ normal(0, 25);
   }
@@ -64,6 +64,5 @@ model {
   y ~ normal(x * beta, sigma_y); // the model for standardized y values
 }
 '
-
 priorBLR <- my.blr(y, x)
 saveRDS(priorBLR, "priors.RDS")
