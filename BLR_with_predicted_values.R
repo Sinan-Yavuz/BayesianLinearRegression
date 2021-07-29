@@ -1,6 +1,6 @@
 #Author: Sinan Yavuz
 #Date: July 28, 2021
-
+#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 #BLR with predicted values - calculate y_test based on x_test
 #I will get the regression coefficient of PISA 2009 via noninformative BLR. It has 6 independent variables. 
 
