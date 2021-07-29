@@ -12,13 +12,13 @@ library(loo)
 options(mc.cores = 4)
 
 #read the dataset
-pisa.2009.stu <- read.csv("PISA2009_forInf.csv")
+pisa.2009.stu <- readRDS("pisa.2009.stu.RDS")
 
 #missing data needs to be modeled in stan, I will listwise delete. My goal is just to have sense of the priors 
 dt <- na.omit(pisa.2009.stu)
+
 y <- dt$PV1READ
 x <- dt[,-7]
-
 
 #data prep function - it is useful and keeps the environment clean
 data.stan <- function(y.train, x.train) {
@@ -30,13 +30,14 @@ data.stan <- function(y.train, x.train) {
 }
 
 #also helpful to get the estimates directly
-my.blr <- function(y.train, x.train, n.chains = 4, n_iter = 10000) {
+my.blr <- function(y.train, x.train, n.chains = 4, n_iter = 00000) {
   writeLines(modelstring, con = 'modelBLR.stan')
   data <- data.stan(y.train, x.train)
   fit <- stan('modelBLR.stan', data = data, iter = n_iter, chains = n.chains)
   est <- summary(fit)$summary
-  beta <- est[grep('^beta\\[', rownames(est)), ][1:data$M,]
-  return(est)
+  beta <- est[grep('^beta\\[', rownames(est)), ][1:data$M,c("mean","sd")]
+  rownames(beta) <- colnames(x)
+  return(beta)
 }
 
 modelstring <- '
@@ -65,3 +66,4 @@ model {
 '
 
 priorBLR <- my.blr(y, x)
+saveRDS(priorBLR, "priors.RDS")
