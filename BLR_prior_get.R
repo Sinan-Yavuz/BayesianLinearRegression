@@ -1,7 +1,8 @@
 #Author: Sinan Yavuz
 #Date: July 28, 2021
-
 #I will get the regression coefficient of PISA 2009 via noninformative BLR. It has 6 independent variables. 
+#rm(list = ls())
+#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 #call packages
 library(dplyr)
@@ -34,7 +35,7 @@ my.blr <- function(y.train, x.train, n.chains = 4, n_iter = 10000) {
   data <- data.stan(y.train, x.train)
   fit <- stan('modelBLR.stan', data = data, iter = n_iter, chains = n.chains)
   est <- summary(fit)$summary
-  beta <- est[grep('^beta\\[', rownames(est)), ][1:data$M, "mean"]
+  beta <- est[grep('^beta\\[', rownames(est)), ][1:data$M,]
   return(est)
 }
 
